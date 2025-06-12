@@ -9,7 +9,7 @@ console.log('PR TITLE', prTitle);
 console.log('PR AUTHOR', prAuthor);
 
 async function main() {
-  // const taskId = taskIdMatch[1];
+  // const taskId = taskIdMatch[1]; // mock
   const taskId = 'sampleTask'; // mocked for now
 
   const response = await notion.databases.query({
