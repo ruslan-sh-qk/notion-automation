@@ -1,7 +1,7 @@
 import { Client } from '@notionhq/client';
 
-const notion = new Client({ auth: process.env.NOTION_API_KEY || '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' });
-const databaseId = process.env.NOTION_DATABASE_ID || '210e0249793c80469a86000ce9e5cd96';
+const notion = new Client({ auth: process.env.NOTION_API_KEY });
+const databaseId = process.env.NOTION_DATABASE_ID;
 const prTitle = process.env.PR_TITLE;
 const prAuthor = process.env.PR_AUTHOR;
 
@@ -9,12 +9,6 @@ console.log('PR TITLE', prTitle);
 console.log('PR AUTHOR', prAuthor);
 
 async function main() {
-  const taskIdMatch = prTitle.match(/([A-Z]+-\d+)/);
-  if (!taskIdMatch) {
-    console.error('❌ No taskId found in PR title');
-    process.exit(1);
-  }
-
   // const taskId = taskIdMatch[1];
   const taskId = 'sampleTask'; // mocked for now
 
