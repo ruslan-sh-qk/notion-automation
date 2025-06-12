@@ -50,7 +50,7 @@ async function main() {
     }
   });
 
-  console.log(`✅ Updated "Approved by" for task ${taskId} with user ${prAuthor}`);
+  console.log(`✅ Updated "Approved by" for tasks ${taskId} with user ${prAuthor}`);
 }
 
 main().catch((err) => {
