@@ -57,7 +57,7 @@ function parseTicketId(input) {
 
 async function main() {
   const taskId = parseTicketId(mergeRequestTitle);
-  console.log(`Output log for taskId:, ${taskId}`);
+  console.log(`Output log for taskId:${taskId}`);
   const pageId = await findPageIdByTaskId(taskId);
   await updateApprovedBy(pageId, mrAuthor);
 
