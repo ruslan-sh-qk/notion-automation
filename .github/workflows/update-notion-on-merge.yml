@@ -1,14 +1,15 @@
-name: Update Notion "Approved by" on PR Open
+name: Update Notion "Approved by"
 
 on:
   pull_request:
     types: [opened]
   push:
-    branches: [ feature/** ] # adjust as needed
+    branches: [feature/**]
 
 jobs:
   update-notion:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -21,10 +22,32 @@ jobs:
       - name: Install deps
         run: npm install
 
+      - name: Install GitHub CLI
+        run: sudo apt-get install -y gh jq
+
+      - name: Get PR metadata for pull_request event
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "MR_TITLE=${{ github.event.pull_request.title }}" >> $GITHUB_ENV
+          echo "MR_AUTHOR=${{ github.event.pull_request.user.login }}" >> $GITHUB_ENV
+
+      - name: Get PR metadata for push event using GitHub CLI
+        if: github.event_name == 'push'
+        run: |
+          PR_DATA=$(gh pr list --head "${GITHUB_REF_NAME}" --state open --json title,author --jq '.[0]')
+          if [ "$PR_DATA" = "null" ]; then
+            echo "No PR found for branch '${GITHUB_REF_NAME}'"
+            exit 1
+          fi
+          echo "MR_TITLE=$(echo "$PR_DATA" | jq -r '.title')" >> $GITHUB_ENV
+          echo "MR_AUTHOR=$(echo "$PR_DATA" | jq -r '.author.login')" >> $GITHUB_ENV
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Run Notion updater
         run: node scripts/update-notion-approved-by.js
         env:
-          NOTION_API_KEY: "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"
-          NOTION_DATABASE_ID: "210e0249793c8077b602c2a5d049e0bc"
-          MR_TITLE: ${{ github.head_ref }}
-          MR_AUTHOR: ${{ github.user.login }}
+          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+          MR_TITLE: ${{ env.MR_TITLE }}
+          MR_AUTHOR: ${{ env.MR_AUTHOR }}
