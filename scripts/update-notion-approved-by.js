@@ -1,7 +1,7 @@
 const NOTION_API_BASE = 'https://api.notion.com/v1';
 const NOTION_VERSION = '2022-06-28';
 
-const notionToken = process.env.NOTION_TOKEN;
+const notionToken = process.env.NOTION_SECRET;
 const databaseId = process.env.NOTION_DATABASE_ID;
 const mergeRequestTitle = process.env.MR_TITLE;
 const mrAuthor = process.env.MR_AUTHOR;
