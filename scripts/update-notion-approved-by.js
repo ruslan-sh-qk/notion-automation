@@ -48,7 +48,7 @@ async function updateApprovedBy(pageId, author) {
 }
 
 function parseTicketId(input) {
-  const match = input.match(/[A-Z]+-\d{3}(?!\d)/);
+  const match = input.match(/[A-Z]+-\d+/);
   if (!match) {
     throw new Error(`No valid ticket ID found in "${input}"`);
   }
@@ -57,7 +57,7 @@ function parseTicketId(input) {
 
 async function main() {
   const taskId = parseTicketId(mergeRequestTitle);
-  console.log(`Output log for taskId:, ${taskId}`)
+  console.log(`Output log for taskId:, ${taskId}`);
   const pageId = await findPageIdByTaskId(taskId);
   await updateApprovedBy(pageId, mrAuthor);
 
