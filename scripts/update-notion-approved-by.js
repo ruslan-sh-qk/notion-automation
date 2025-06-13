@@ -1,53 +1,69 @@
-import { Client } from '@notionhq/client';
+const NOTION_API_BASE = 'https://api.notion.com/v1';
+const NOTION_VERSION = '2022-06-28';
 
-const notion = new Client({ auth: process.env.NOTION_API_KEY });
+const notionToken = process.env.NOTION_TOKEN;
 const databaseId = process.env.NOTION_DATABASE_ID;
-const prTitle = process.env.PR_TITLE;
-const prAuthor = process.env.PR_AUTHOR;
+const mergeRequestTitle = process.env.PR_TITLE;
+const mrAuthor = process.env.MR_AUTHOR;
 
-console.log('PR TITLE', prTitle);
-console.log('PR AUTHOR', prAuthor);
+const buildUpdatePayload = (author) => ({ properties: { "Approved by": { rich_text: [{ text: { content: author } } ] } } })
+const buildTaskIdFilter  = (taskID) => ({ filter: { property: 'Task ID', rich_text: { equals: taskID } } })
 
-async function main() {
-  // const taskId = taskIdMatch[1]; // mock
-  const taskId = 'sampleTask'; // mocked for now
+async function fetchNotionAPI(method, endpoint, body = null) {
+    const response = await fetch(`${NOTION_API_BASE}/${endpoint}`, {
+      method,
+      headers: {
+        'Authorization': `Bearer ${notionToken}`,
+        'Notion-Version': NOTION_VERSION,
+        'Content-Type': 'application/json',
+      },
+      body: body ? JSON.stringify(body) : null,
+    });
 
-  const response = await notion.databases.query({
-    database_id: databaseId,
-    filter: {
-      property: 'Task ID',
-      rich_text: {
-        equals: taskId
-      }
+    if (!response.ok) {
+      const errorBody = await response.text();
+      throw new Error(`Notion API error: ${response.status} ${response.statusText} — ${errorBody}`);
     }
-  });
 
-  if (response.results.length === 0) {
-    console.error(`❌ No Notion page found with taskId: ${taskId}`);
-    process.exit(1);
+    return response.json();
+}
+
+async function findPageIdByTaskId(taskId) {
+  const response = await fetchNotionAPI(
+      'POST',
+      `databases/${databaseId}/query`,
+      buildTaskIdFilter(taskId)
+  );
+
+  const pageId = response?.results?.[0]?.id;
+  if (!pageId) {
+    throw new Error(`No pages found for task ID "${taskId}". Full response: ${JSON.stringify(response)}`);
   }
 
-  const pageId = response.results[0].id;
+  return pageId;
+}
 
-  await notion.pages.update({
-    page_id: pageId,
-    properties: {
-      'Approved by': {
-        rich_text: [
-          {
-            text: {
-              content: prAuthor
-            }
-          }
-        ]
-      }
-    }
-  });
+async function updateApprovedBy(pageId, author) {
+  await fetchNotionAPI('PATCH', `pages/${pageId}`, buildUpdatePayload(author));
+}
 
-  console.log(`✅ Updated "Approved by" for tasks ${taskId} with user ${prAuthor}`);
+async function parseTaskIdFromTitle(title) {
+  const match = title.match(/([a-z]+-\d+)/i);
+  if (!match) {
+    throw new Error(`No task ID found in title "${title}".`);
+  }
+  return match[1];
+}
+
+async function main() {
+  const taskId = parseTaskIdFromTitle(mergeRequestTitle);
+  console.log(`Output log for taskId:, ${taskId}`)
+  const pageId = await findPageIdByTaskId(taskId);
+  await updateApprovedBy(pageId, mrAuthor);
+
+  console.log(`Updated Notion page ${pageId} with author "${mrAuthor}" for task "${taskId}".`);
 }
 
 main().catch((err) => {
-  console.error('🔥 Error updating Notion:', err.message);
-  process.exit(1);
+  console.error('Script failed:', err.message);
 });
