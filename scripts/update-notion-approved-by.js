@@ -47,16 +47,16 @@ async function updateApprovedBy(pageId, author) {
   await fetchNotionAPI('PATCH', `pages/${pageId}`, buildUpdatePayload(author));
 }
 
-async function parseTaskIdFromTitle(title) {
-  const match = title.match(/([a-z]+-\d+)/i);
+function parseTicketId(input) {
+  const match = input.match(/[A-Z]+-\d{3}(?!\d)/);
   if (!match) {
-    throw new Error(`No task ID found in title "${title}".`);
+    throw new Error(`No valid ticket ID found in "${input}"`);
   }
-  return match[1];
+  return match[0];
 }
 
 async function main() {
-  const taskId = parseTaskIdFromTitle(mergeRequestTitle);
+  const taskId = parseTicketId(mergeRequestTitle);
   console.log(`Output log for taskId:, ${taskId}`)
   const pageId = await findPageIdByTaskId(taskId);
   await updateApprovedBy(pageId, mrAuthor);
