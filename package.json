@@ -3,6 +3,6 @@
     "@notionhq/client": "^3.1.3"
   },
   "scripts": {
-    "push": "git add . && git commit -m 'test' && git push origin"
+    "push": "git add . && git commit -m 'feature(TT-2)' && git push origin"
   }
 }
