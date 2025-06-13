@@ -47,12 +47,12 @@ async function updateApprovedBy(pageId, author) {
   await fetchNotionAPI('PATCH', `pages/${pageId}`, buildUpdatePayload(author));
 }
 
-function parseTicketId(input) {
-  const match = input.match(/[a-z]+-\d+/i);
+function parseTicketId(commitMessage) {
+  const match = commitMessage.match(/\((\w+-\d+)\)/);
   if (!match) {
-    throw new Error(`No valid ticket ID found in "${input}"`);
+    throw new Error(`No ticket ID found in: "${commitMessage}"`);
   }
-  return match[0];
+  return match[1];
 }
 
 async function main() {
