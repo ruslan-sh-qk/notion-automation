@@ -3,6 +3,8 @@ name: Update Notion "Approved by" on PR Open
 on:
   pull_request:
     types: [opened, reopened, synchronize]
+  push:
+    branches: [ feature/** ] # adjust as needed
 
 jobs:
   update-notion:
