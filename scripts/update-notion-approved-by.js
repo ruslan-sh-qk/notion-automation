@@ -48,7 +48,7 @@ async function updateApprovedBy(pageId, author) {
 }
 
 function parseTicketId(input) {
-  const match = input.match(/[A-Z]+-\d+/);
+  const match = input.match(/[a-z]+-\d+/i);
   if (!match) {
     throw new Error(`No valid ticket ID found in "${input}"`);
   }
