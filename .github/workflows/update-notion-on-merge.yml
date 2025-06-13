@@ -25,8 +25,8 @@ jobs:
         if: github.event_name == 'pull_request'
         run: node scripts/update-notion-approved-by.js
         env:
-          NOTION_SECRET: ${{ secrets.NOTION_SECRET }}
-          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+          NOTION_SECRET: "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"
+          NOTION_DATABASE_ID: "210e0249793c8077b602c2a5d049e0bc"
           MR_TITLE: ${{ github.event.pull_request.title }}
           MR_AUTHOR: ${{ github.actor }}
 
