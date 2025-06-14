@@ -15,7 +15,9 @@ async function main() {
     const notionToken = process.env.NOTION_SECRET;
     const databaseId = process.env.NOTION_DATABASE_ID;
 
-    await run({notionApiService: new NotionApiService(notionToken), author, databaseId, mergeRequestTitle})
+    const notionApiService = new NotionApiService(notionToken);
+
+    await run({notionApiService, author, databaseId, mergeRequestTitle})
 }
 
 async function run({notionApiService, mergeRequestTitle, author, databaseId}) {
