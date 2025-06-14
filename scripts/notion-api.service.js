@@ -51,7 +51,7 @@ class NotionApiService {
         await this.#fetchNotionAPI('PATCH', `pages/${pageId}`, payload);
     }
 
-    async healthcheck() {
+    async healthCheck() {
         await this.#fetchNotionAPI('GET', 'users/me');
     }
 }

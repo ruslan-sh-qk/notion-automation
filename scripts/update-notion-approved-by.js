@@ -1,11 +1,5 @@
 const NotionApiService = require("./notion-api.service");
 
-const mergeRequestTitle = process.env.MR_TITLE;
-const author = process.env.MR_AUTHOR;
-
-const notionToken = process.env.NOTION_SECRET;
-const databaseId = process.env.NOTION_DATABASE_ID;
-
 function parseTicketId(commitMessage) {
     const match = commitMessage.match(/\((\w+-\d+)\)/); // Matches (LMD-1234) or (BUG-5678)
     if (!match) {
@@ -15,13 +9,21 @@ function parseTicketId(commitMessage) {
 }
 
 async function main() {
-    const notionApiService = new NotionApiService(notionToken);
+    const mergeRequestTitle = process.env.MR_TITLE;
+    const author = process.env.MR_AUTHOR;
 
-    await notionApiService.healthcheck();
+    const notionToken = process.env.NOTION_SECRET;
+    const databaseId = process.env.NOTION_DATABASE_ID;
+
+    await run({notionApiService: new NotionApiService(notionToken), author, databaseId, mergeRequestTitle})
+}
+
+async function run({notionApiService, mergeRequestTitle, author, databaseId}) {
+    await notionApiService.healthCheck();
     const taskId = parseTicketId(mergeRequestTitle);
+
     const pageId = await notionApiService.findPageByTaskFromDatabase(taskId, databaseId);
     await notionApiService.updateApprovedBy(pageId, author);
-
     console.log(`Updated Notion page ${pageId} with author "${author}" for task "${taskId}".`);
 }
 
@@ -30,6 +32,4 @@ main().catch((err) => {
 });
 
 
-// workflow reject on internal error
-
-// ifelse cover with unit tests
+module.exports = {parseTicketId, main};
