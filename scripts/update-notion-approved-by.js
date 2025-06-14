@@ -1,4 +1,4 @@
-import NotionApiService from "./notion-api.service";
+const NotionApiService = require("./notion-api.service");
 
 const mergeRequestTitle = process.env.MR_TITLE;
 const author = process.env.MR_AUTHOR;
