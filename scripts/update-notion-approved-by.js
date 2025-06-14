@@ -1,11 +1,7 @@
 import NotionApiService from "./notion-api.service";
 
-
 const mergeRequestTitle = process.env.MR_TITLE;
 const author = process.env.MR_AUTHOR;
-
-
-
 
 function parseTicketId(commitMessage) {
     const match = commitMessage.match(/\((\w+-\d+)\)/); // Matches (LMD-1234) or (BUG-5678)

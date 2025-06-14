@@ -6,14 +6,6 @@ const databaseId = process.env.NOTION_DATABASE_ID;
 
 class NotionApiService {
 
-    #buildUpdatePayload(author) {
-        return {properties: {"Approved by": {rich_text: [{text: {content: author}}]}}}
-    }
-
-    #buildTaskIdFilter(taskID){
-        return {filter: {property: 'Task ID', rich_text: {equals: taskID}}}
-    }
-
      async #fetchNotionAPI(method, endpoint, body = null) {
         const response = await fetch(`${NOTION_API_BASE}/${endpoint}`, {
             method,
@@ -34,10 +26,11 @@ class NotionApiService {
     }
 
     async findPageIdByTaskId(taskId) {
+        const filter = {filter: {property: 'Task ID', rich_text: {equals: taskId}}};
         const response = await this.#fetchNotionAPI(
             'POST',
             `databases/${databaseId}/query`,
-            this.#buildTaskIdFilter(taskId)
+            filter
         );
 
         const pageId = response?.results?.[0]?.id;
@@ -49,7 +42,8 @@ class NotionApiService {
     }
 
      async updateApprovedBy(pageId, author) {
-        await this.#fetchNotionAPI('PATCH', `pages/${pageId}`, this.#buildUpdatePayload(author));
+        const payload ={properties: {"Approved by": {rich_text: [{text: {content: author}}]}}}
+        await this.#fetchNotionAPI('PATCH', `pages/${pageId}`, payload);
     }
 
     async healthcheck() {
