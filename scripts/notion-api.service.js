@@ -1,16 +1,21 @@
 const NOTION_API_BASE = 'https://api.notion.com/v1';
 const NOTION_VERSION = '2022-06-28';
 
-const notionToken = process.env.NOTION_SECRET;
-const databaseId = process.env.NOTION_DATABASE_ID;
-
 class NotionApiService {
+
+    constructor(notionToken) {
+        this.notionToken = notionToken;
+
+        if (!this.notionToken ) {
+            throw new Error('Notion token must be provided.');
+        }
+    }
 
      async #fetchNotionAPI(method, endpoint, body = null) {
         const response = await fetch(`${NOTION_API_BASE}/${endpoint}`, {
             method,
             headers: {
-                'Authorization': `Bearer ${notionToken}`,
+                'Authorization': `Bearer ${this.notionToken}`,
                 'Notion-Version': NOTION_VERSION,
                 'Content-Type': 'application/json',
             },
@@ -25,7 +30,7 @@ class NotionApiService {
         return response.json();
     }
 
-    async findPageIdByTaskId(taskId) {
+    async findPageByTaskFromDatabase(taskId, databaseId) {
         const filter = {filter: {property: 'Task ID', rich_text: {equals: taskId}}};
         const response = await this.#fetchNotionAPI(
             'POST',
@@ -51,4 +56,4 @@ class NotionApiService {
     }
 }
 
-export default NotionApiService;
+module.exports = NotionApiService;
