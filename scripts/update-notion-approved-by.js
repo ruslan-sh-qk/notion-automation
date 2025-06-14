@@ -29,9 +29,10 @@ async function run({notionApiService, mergeRequestTitle, author, databaseId}) {
     console.log(`Updated Notion page ${pageId} with author "${author}" for task "${taskId}".`);
 }
 
-main().catch((err) => {
-    console.error('Script failed:', err.message);
-});
+if (require.main === module) {
+    main().catch((err) => {
+        console.error('Script failed:', err.message);
+    });
+}
 
-
-module.exports = {parseTicketId, main};
+module.exports = {parseTicketId, main, run};
