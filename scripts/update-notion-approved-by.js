@@ -43,7 +43,7 @@ async function run({ notionApi, credentials }) {
 if ( require.main === module ) {
     main(process.env, { run, NotionApi })
         .then(() => {
-            console.log(`✅ Notion page is update"`)
+            console.log(`✅ Notion page is updated`)
         })
         .catch((err) => {
             console.error(`❌ Script failed: ${ err.message }, stack: ${ err.stack }`);
