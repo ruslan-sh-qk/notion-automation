@@ -46,8 +46,8 @@ class NotionApi {
         return pageId;
     }
 
-    async updatePageWithProperty(pageId, property, author) {
-        const payload = { properties: { property: { rich_text: [ { text: { content: author } } ] } } }
+    async updatePageWithProperty(pageId, fieldName, author) {
+        const payload = { properties: { [fieldName]: { rich_text: [ { text: { content: author } } ] } } }
         await this.#fetchNotionAPI('PATCH', `pages/${ pageId }`, payload);
     }
 
