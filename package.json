@@ -4,6 +4,7 @@
     "jest": "^30.0.0"
   },
   "scripts": {
+    "test": "jest",
     "push": "git add . && git commit -m 'feature(TT-2)' && git push origin"
   },
   "devDependencies": {

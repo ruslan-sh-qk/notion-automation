@@ -1,38 +1,34 @@
 const NotionApiService = require("./notion-api.service");
+const utils = require("./utils");
 
-function parseTicketId(commitMessage) {
-    const match = commitMessage.match(/\((\w+-\d+)\)/); // Matches (LMD-1234) or (BUG-5678)
-    if (!match) {
-        throw new Error(`No ticket ID found in: "${commitMessage}"`);
+async function main(env, { runFunc, NotionApiService }) {
+    const { getEnvOrThrow } = utils;
+    const credentials = {
+        author: getEnvOrThrow(env, 'MR_AUTHOR'),
+        databaseId: getEnvOrThrow(env, 'NOTION_DATABASE_ID'),
+        mergeRequestTitle: getEnvOrThrow(env, 'MR_TITLE')
     }
-    return match[1];
-}
 
-async function main() {
-    const mergeRequestTitle = process.env.MR_TITLE;
-    const author = process.env.MR_AUTHOR;
-
-    const notionToken = process.env.NOTION_SECRET;
-    const databaseId = process.env.NOTION_DATABASE_ID;
-
+    const notionToken = getEnvOrThrow(env, 'NOTION_SECRET');
     const notionApiService = new NotionApiService(notionToken);
 
-    await run({notionApiService, author, databaseId, mergeRequestTitle})
+    await runFunc({ notionApiService, credentials });
 }
 
-async function run({notionApiService, mergeRequestTitle, author, databaseId}) {
+async function run({ notionApiService, credentials }) {
+    const { author, databaseId, mergeRequestTitle } = credentials;
     await notionApiService.healthCheck();
-    const taskId = parseTicketId(mergeRequestTitle);
+    const taskId = utils.parseTicketId(mergeRequestTitle);
 
     const pageId = await notionApiService.findPageByTaskFromDatabase(taskId, databaseId);
     await notionApiService.updateApprovedBy(pageId, author);
-    console.log(`Updated Notion page ${pageId} with author "${author}" for task "${taskId}".`);
+    console.log(`Updated Notion page ${ pageId } with author "${ author }" for task "${ taskId }".`); // cover with tests
 }
 
-if (require.main === module) {
-    main().catch((err) => {
+if ( require.main === module ) {
+    main(process.env, { run, NotionApiService }).catch((err) => {
         console.error('Script failed:', err.message);
     });
 }
 
-module.exports = {parseTicketId, main, run};
+module.exports = { main, run };
