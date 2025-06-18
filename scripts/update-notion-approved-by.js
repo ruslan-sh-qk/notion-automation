@@ -1,4 +1,5 @@
-const NotionApiService = require("./notion-api.service");
+const NotionApi = require("./notion.api");
+const GitHubApi = require("./github.api");
 const utils = require("./utils");
 
 async function main(env, { runFunc, NotionApiService }) {
@@ -18,6 +19,10 @@ async function main(env, { runFunc, NotionApiService }) {
 async function run({ notionApiService, credentials }) {
     const { author, databaseId, mergeRequestTitle } = credentials;
     await notionApiService.healthCheck();
+
+    // const gitHubApi = new GitHubApi();
+    // const { name } = await gitHubApi.getUser(au);
+
     const taskId = utils.parseTicketId(mergeRequestTitle);
 
     const pageId = await notionApiService.findPageByTaskFromDatabase(taskId, databaseId);
@@ -26,7 +31,7 @@ async function run({ notionApiService, credentials }) {
 }
 
 if ( require.main === module ) {
-    main(process.env, { runFunc: run, NotionApiService }).catch((err) => {
+    main(process.env, { runFunc: run, NotionApiService: NotionApi }).catch((err) => {
         console.error('Script failed:', err.message);
     });
 }

@@ -1,7 +1,7 @@
-const NOTION_API_BASE = 'https://api.notion.com/v1';
-const NOTION_VERSION = '2022-06-28';
+class NotionApi {
 
-class NotionApiService {
+     NOTION_API_BASE = 'https://api.notion.com/v1';
+     NOTION_VERSION = '2022-06-28';
 
     constructor(notionToken) {
         this.notionToken = notionToken;
@@ -12,11 +12,11 @@ class NotionApiService {
     }
 
      async #fetchNotionAPI(method, endpoint, body = null) {
-        const response = await fetch(`${NOTION_API_BASE}/${endpoint}`, {
+        const response = await fetch(`${this.NOTION_API_BASE}/${endpoint}`, {
             method,
             headers: {
                 'Authorization': `Bearer ${this.notionToken}`,
-                'Notion-Version': NOTION_VERSION,
+                'Notion-Version': this.NOTION_VERSION,
                 'Content-Type': 'application/json',
             },
             body: body ? JSON.stringify(body) : null,
@@ -56,4 +56,4 @@ class NotionApiService {
     }
 }
 
-module.exports = NotionApiService;
+module.exports = NotionApi;
