@@ -1,11 +1,12 @@
-name: Update Notion "Approved by" on PR Open
+name: Update Notion "Approved by" on PR Approval to develop
 
 on:
-  pull_request:
-    types: [opened]
+  pull_request_review:
+    types: [ submitted ]
 
 jobs:
   update-notion:
+    if: github.event.review.state == 'approved' && github.event.pull_request.base.ref == 'develop'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -16,13 +17,10 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Install deps
-        run: npm install
-
       - name: Run Notion updater
         run: node scripts/update-notion-approved-by.js
         env:
-          NOTION_API_KEY: ${{ secrets.NOTION_API_KEY }}
+          NOTION_SECRET: ${{ secrets.NOTION_SECRET }}
           NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          MR_TITLE: ${{ github.event.pull_request.title }}
+          MR_AUTHOR: ${{ github.event.review.user.login }}

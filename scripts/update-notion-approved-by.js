@@ -1,59 +1,53 @@
-import { Client } from '@notionhq/client';
+const NotionApi = require("./notion.api");
+const utils = require("./utils");
 
-const notion = new Client({ auth: process.env.NOTION_API_KEY || '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' });
-const databaseId = process.env.NOTION_DATABASE_ID || '210e0249793c80469a86000ce9e5cd96';
-const prTitle = process.env.PR_TITLE;
-const prAuthor = process.env.PR_AUTHOR;
+/**
+ *
+ * @param env
+ * @param run
+ * @param NotionApi
+ * @returns {Promise<void>}
+ */
+async function main(env, { run, NotionApi }) {
+    const { getEnvOrThrow } = utils;
 
-console.log('PR TITLE', prTitle);
-console.log('PR AUTHOR', prAuthor);
+    const credentials = {
+        mergeRequestLogin: getEnvOrThrow(env, 'MR_AUTHOR'),
+        databaseId: getEnvOrThrow(env, 'NOTION_DATABASE_ID'),
+        mergeRequestTitle: getEnvOrThrow(env, 'MR_TITLE')
+    };
+    const notionToken = getEnvOrThrow(env, 'NOTION_SECRET');
+    const notionApi = new NotionApi(notionToken);
 
-async function main() {
-  const taskIdMatch = prTitle.match(/([A-Z]+-\d+)/);
-  if (!taskIdMatch) {
-    console.error('❌ No taskId found in PR title');
-    process.exit(1);
-  }
-
-  // const taskId = taskIdMatch[1];
-  const taskId = 'sampleTask'; // mocked for now
-
-  const response = await notion.databases.query({
-    database_id: databaseId,
-    filter: {
-      property: 'Task ID',
-      rich_text: {
-        equals: taskId
-      }
-    }
-  });
-
-  if (response.results.length === 0) {
-    console.error(`❌ No Notion page found with taskId: ${taskId}`);
-    process.exit(1);
-  }
-
-  const pageId = response.results[0].id;
-
-  await notion.pages.update({
-    page_id: pageId,
-    properties: {
-      'Approved by': {
-        rich_text: [
-          {
-            text: {
-              content: prAuthor
-            }
-          }
-        ]
-      }
-    }
-  });
-
-  console.log(`✅ Updated "Approved by" for task ${taskId} with user ${prAuthor}`);
+    await run({ notionApi, credentials });
 }
 
-main().catch((err) => {
-  console.error('🔥 Error updating Notion:', err.message);
-  process.exit(1);
-});
+/**
+ *
+ * @param notionApi
+ * @param credentials
+ * @returns {Promise<void>}
+ */
+async function run({ notionApi, credentials }) {
+    const { mergeRequestLogin, databaseId, mergeRequestTitle } = credentials;
+    await notionApi.healthCheck();
+
+    const taskId = utils.parseTicketId(mergeRequestTitle);
+
+    const pageId = await notionApi.findPageByTaskFromDatabase(taskId, databaseId);
+    const updateNotionProperty = 'Approved by';
+
+    await notionApi.updatePageWithProperty(pageId, updateNotionProperty, mergeRequestLogin);
+}
+
+if ( require.main === module ) {
+    main(process.env, { run, NotionApi })
+        .then(() => {
+            console.log(`✅ Notion page is updated`)
+        })
+        .catch((err) => {
+            console.error(`❌ Script failed: ${ err.message }, stack: ${ err.stack }`);
+        });
+}
+
+module.exports = { main, run };
