@@ -17,9 +17,6 @@ jobs:
         with:
           node-version: "20"
 
-      - name: Install deps
-        run: npm install
-
       - name: Run Notion updater
         run: node scripts/update-notion-approved-by.js
         env:

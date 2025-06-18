@@ -1,6 +1,13 @@
 const NotionApi = require("./notion.api");
 const utils = require("./utils");
 
+/**
+ *
+ * @param env
+ * @param run
+ * @param NotionApi
+ * @returns {Promise<void>}
+ */
 async function main(env, { run, NotionApi }) {
     const { getEnvOrThrow } = utils;
 
@@ -15,6 +22,12 @@ async function main(env, { run, NotionApi }) {
     await run({ notionApi, credentials });
 }
 
+/**
+ *
+ * @param notionApi
+ * @param credentials
+ * @returns {Promise<void>}
+ */
 async function run({ notionApi, credentials }) {
     const { mergeRequestLogin, databaseId, mergeRequestTitle } = credentials;
     await notionApi.healthCheck();
@@ -25,13 +38,16 @@ async function run({ notionApi, credentials }) {
     const updateNotionProperty = 'Approved by';
 
     await notionApi.updatePageWithProperty(pageId, updateNotionProperty, mergeRequestLogin);
-    console.log(`Updated page with author "${ mergeRequestLogin }" for task "${ taskId }".`);
 }
 
 if ( require.main === module ) {
-    main(process.env, { run, NotionApi }).catch((err) => {
-        console.error('Script failed:', err.message);
-    });
+    main(process.env, { run, NotionApi })
+        .then(() => {
+            console.log(`✅ Notion page is update"`)
+        })
+        .catch((err) => {
+            console.error(`❌ Script failed: ${ err.message }, stack: ${ err.stack }`);
+        });
 }
 
 module.exports = { main, run };

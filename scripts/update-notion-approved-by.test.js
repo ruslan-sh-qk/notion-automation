@@ -17,7 +17,7 @@ const mockedEnvs = {
 };
 
 const mockedCredentials = {
-    author: 'john.doe',
+    mergeRequestLogin: 'john.doe',
     databaseId: 'mock_db',
     mergeRequestTitle: 'feat(TT-123): test'
 };
@@ -93,21 +93,45 @@ describe('update notion `approval to production` field', () => {
                         NOTION_DATABASE_ID: 'db123',
                     }[key];
                 });
+
                 await main(mockedEnvs, { run: runFunc, NotionApi: mockNotionApiService });
                 expect(getEnvOrThrowSpy).toHaveBeenCalledWith(mockedEnvs, 'MR_TITLE');
+                expect(getEnvOrThrowSpy).toHaveBeenCalledWith(mockedEnvs, 'MR_AUTHOR');
+                expect(getEnvOrThrowSpy).toHaveBeenCalledWith(mockedEnvs, 'NOTION_SECRET');
+                expect(getEnvOrThrowSpy).toHaveBeenCalledWith(mockedEnvs, 'NOTION_DATABASE_ID');
             })
         })
 
         describe('`run` function', () => {
 
-            // it('')
+            it('should call health check', async () => {
+                await run({ notionApi: mockNotionApiServiceInstance, credentials: mockedCredentials });
+                expect(mockNotionApiServiceInstance.healthCheck).toHaveBeenCalled();
+            })
 
-            it('should call console message as final step', async () => {
-                jest.spyOn(utils, 'parseTicketId').mockReturnValue('ticketMock');
-                const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {
-                });
-                await run({ notionApi: mockNotionApiServiceInstance, credentials: mockedEnvs });
-                expect(logSpy).toHaveBeenCalled();
+            it('should call parseTicket ID', async () => {
+                const parseSpy = jest.spyOn(utils, 'parseTicketId').mockImplementation();
+                await run({ notionApi: mockNotionApiServiceInstance, credentials: mockedCredentials });
+                expect(parseSpy).toHaveBeenCalledWith(mockedCredentials.mergeRequestTitle);
+            })
+
+            it('should call findPageByTaskFromDatabase with TICKET-123', async () => {
+                jest.spyOn(utils, 'parseTicketId').mockImplementation(() => 'TICKET-123');
+                await run({ notionApi: mockNotionApiServiceInstance, credentials: mockedCredentials });
+                expect(mockNotionApiServiceInstance.findPageByTaskFromDatabase).toHaveBeenCalledWith('TICKET-123', mockedCredentials.databaseId);
+            });
+
+
+            it('should call updatePageWithProperty with TICKET-123 providing notionKey and value', async () => {
+                jest.spyOn(utils, 'parseTicketId').mockImplementation(() => 'TICKET-123');
+                mockNotionApiServiceInstance.findPageByTaskFromDatabase = jest.fn().mockResolvedValue('pageIdMock');
+
+                const updateNotionProperty = 'Approved by';
+
+                await run({ notionApi: mockNotionApiServiceInstance, credentials: mockedCredentials });
+                expect(mockNotionApiServiceInstance.updatePageWithProperty).toHaveBeenCalledWith('pageIdMock', updateNotionProperty, mockedCredentials.mergeRequestLogin);
+
+                mockNotionApiServiceInstance.findPageByTaskFromDatabase.mockReset();
             });
         })
     })
