@@ -12,7 +12,7 @@ async function main(env, { run, NotionApi }) {
     const notionToken = getEnvOrThrow(env, 'NOTION_SECRET');
     const notionApi = new NotionApi(notionToken);
 
-    await run({ notionApi, credentials, gitHubApi });
+    await run({ notionApi, credentials });
 }
 
 async function run({ notionApi, credentials }) {
