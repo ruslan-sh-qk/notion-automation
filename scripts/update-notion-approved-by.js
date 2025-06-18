@@ -22,8 +22,9 @@ async function run({ notionApi, credentials }) {
     const taskId = utils.parseTicketId(mergeRequestTitle);
 
     const pageId = await notionApi.findPageByTaskFromDatabase(taskId, databaseId);
-    await notionApi.updateApprovedBy(pageId, mergeRequestLogin);
-    console.log(`Updated Notion page ${ pageId } with author "${ mergeRequestLogin }" for task "${ taskId }".`); // cover with tests
+    const updateNotionProperty = 'Approved by';
+    await notionApi.updatePageWithProperty(pageId, updateNotionProperty, mergeRequestLogin);
+    console.log(`Updated Notion page ${ pageId } with author "${ mergeRequestLogin }" for task "${ taskId }".`);
 }
 
 if ( require.main === module ) {

@@ -1,7 +1,7 @@
 function parseTicketId(commitMessage) {
     const match = commitMessage.match(/\((\w+-\d+)\)/); // Matches (LMD-1234) or (BUG-5678)
-    if (!match) {
-        throw new Error(`No ticket ID found in: "${commitMessage}"`);
+    if ( !match ) {
+        throw new Error(`No ticket ID found in: "${ commitMessage }"`);
     }
     return match[1];
 }

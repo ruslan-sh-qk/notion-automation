@@ -1,6 +1,6 @@
 class GitHubApi {
     GITHUB_API = 'https://api.github.com/'
-
+ 
     async #fetchAPI(method, endpoint, body = null) {
         const response = await fetch(`${ this.GITHUB_API }/${ endpoint }`, {
             method,
