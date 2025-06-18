@@ -26,7 +26,7 @@ async function run({ notionApiService, credentials }) {
 }
 
 if ( require.main === module ) {
-    main(process.env, { run, NotionApiService }).catch((err) => {
+    main(process.env, { runFunc: run, NotionApiService }).catch((err) => {
         console.error('Script failed:', err.message);
     });
 }
