@@ -99,7 +99,10 @@ describe('update notion `approval to production` field', () => {
         })
 
         describe('`run` function', () => {
-            it('should show console message as final step', async () => {
+
+            // it('')
+
+            it('should call console message as final step', async () => {
                 jest.spyOn(utils, 'parseTicketId').mockReturnValue('ticketMock');
                 const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {
                 });
