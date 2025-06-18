@@ -1,17 +1,11 @@
-const { run, main, getEnvOrThrow } = require('./update-notion-approved-by');
+const { run, main } = require('./update-notion-approved-by');
 const utils = require('./utils');
-
-const notionApiService = {
-    healthCheck: jest.fn(),
-    findPageByTaskFromDatabase: () => Promise.resolve('test_page_id'),
-    updateApprovedBy: jest.fn(),
-}
 
 const runFunc = jest.fn();
 const mockNotionApiServiceInstance = {
     healthCheck: jest.fn(),
     findPageByTaskFromDatabase: jest.fn(),
-    updateApprovedBy: jest.fn()
+    updatePageWithProperty: jest.fn()
 };
 const mockNotionApiService = jest.fn().mockImplementation(() => mockNotionApiServiceInstance);
 
@@ -58,7 +52,7 @@ describe('update notion `approval to production` field', () => {
                 mockNotionApiServiceInstance.healthCheck = jest.fn().mockRejectedValue(new Error('Notion API is down'));
 
                 await expect(run({
-                    notionApiService: mockNotionApiServiceInstance,
+                    notionApi: mockNotionApiServiceInstance,
                     credentials: mockedCredentials
                 })).rejects.toThrow('Notion API is down');
 
@@ -69,21 +63,21 @@ describe('update notion `approval to production` field', () => {
                 mockNotionApiServiceInstance.findPageByTaskFromDatabase = jest.fn().mockRejectedValue(new Error('Notion API is down'));
 
                 await expect(run({
-                    notionApiService: mockNotionApiServiceInstance,
+                    notionApi: mockNotionApiServiceInstance,
                     credentials: mockedCredentials
                 })).rejects.toThrow('Notion API is down');
                 mockNotionApiServiceInstance.findPageByTaskFromDatabase.mockReset();
             })
 
             it('should throw error where updateApprovedBy rejects', async () => {
-                mockNotionApiServiceInstance.updateApprovedBy = jest.fn().mockRejectedValue(new Error('Notion API is down'));
+                mockNotionApiServiceInstance.updatePageWithProperty = jest.fn().mockRejectedValue(new Error('Notion API is down'));
 
                 await expect(run({
-                    notionApiService: mockNotionApiServiceInstance,
+                    notionApi: mockNotionApiServiceInstance,
                     credentials: mockedCredentials
                 })).rejects.toThrow('Notion API is down');
 
-                mockNotionApiServiceInstance.updateApprovedBy.mockReset();
+                mockNotionApiServiceInstance.updatePageWithProperty.mockReset();
             })
         })
     });
@@ -99,7 +93,7 @@ describe('update notion `approval to production` field', () => {
                         NOTION_DATABASE_ID: 'db123',
                     }[key];
                 });
-                await main(mockedEnvs, { runFunc, NotionApiService: mockNotionApiService });
+                await main(mockedEnvs, { run: runFunc, NotionApi: mockNotionApiService });
                 expect(getEnvOrThrowSpy).toHaveBeenCalledWith(mockedEnvs, 'MR_TITLE');
             })
         })
@@ -109,11 +103,9 @@ describe('update notion `approval to production` field', () => {
                 jest.spyOn(utils, 'parseTicketId').mockReturnValue('ticketMock');
                 const logSpy = jest.spyOn(console, 'log').mockImplementation(() => {
                 });
-                await run({ notionApiService: mockNotionApiServiceInstance, credentials: mockedEnvs });
+                await run({ notionApi: mockNotionApiServiceInstance, credentials: mockedEnvs });
                 expect(logSpy).toHaveBeenCalled();
             });
         })
     })
-
-
 });
